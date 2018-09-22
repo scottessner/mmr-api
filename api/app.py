@@ -8,7 +8,7 @@ import datetime
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/mmr-api.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mmr-api.db'
 db = SQLAlchemy(app)
 
 
