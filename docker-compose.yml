@@ -1,8 +1,10 @@
-version: '2'
+version: '3'
 
 services:
   api:
-    restart: always
+    container_name: mmr-api-flask
+    hostname: sheldon-mmr-api-flask
+    restart: unless-stopped
     build: ./api
     expose:
       - "8000"
@@ -12,7 +14,9 @@ services:
     command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
 
   nginx:
-    restart: always
+    container_name: mmr-api-nginx
+    hostname: sheldon-mmr-api-nginx
+    restart: unless-stopped
     build: ./nginx
     ports:
       - "80:80"
