@@ -9,7 +9,7 @@ services:
     volumes:
       - /usr/src/app/web/project/static
       - ./db:/home/flask/app/web/db
-    command: /usr/local/bin/gunicorn -w 2 -b :8000
+    command: /usr/local/bin/gunicorn -w 2 -b :8000 app.py
 
   nginx:
     restart: always
