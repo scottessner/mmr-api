@@ -22,7 +22,9 @@ services:
       - "80:80"
     volumes:
       - /www/static
-    volumes_from:
-      - api
-    depends_on:
-      - api
+#    volumes_from:
+#      - api
+#    depends_on:
+#      - api
+#
+#volumes:
