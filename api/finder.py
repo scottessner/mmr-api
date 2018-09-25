@@ -1,11 +1,11 @@
 import os
 import requests
 
-for root, dirs, files in os.walk('/data/mmr-prod/incoming/sheldon/tvshows'):
+for root, dirs, files in os.walk('/run/user/1000/gvfs/smb-share:server=192.168.40.10,share=media/tvshows'):
 
     for file in files:
         if os.path.splitext(file)[1] == '.ts':
-            resp = requests.post('http://127.0.0.1:5000/api/job',
+            resp = requests.post('http://ssessner.com/api/job',
                                  json={'folder': root,
                                        'file_name': file,
                                        'full_path': os.path.join(root,file)})
