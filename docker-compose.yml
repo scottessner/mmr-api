@@ -3,7 +3,7 @@ version: '3'
 services:
   api:
     container_name: mmr-api-flask
-    hostname: sheldon-mmr-api-flask
+    hostname: mmr-api-flask
     restart: unless-stopped
     build: ./api
     expose:
@@ -15,11 +15,12 @@ services:
 
   nginx:
     container_name: mmr-api-nginx
-    hostname: sheldon-mmr-api-nginx
+    hostname: mmr-api-nginx
     restart: unless-stopped
     build: ./nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - /www/static
 #    volumes_from:
