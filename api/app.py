@@ -1,56 +1,27 @@
 from flask import Flask
-from flask_restless import APIManager
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey, Column
-from sqlalchemy import INTEGER, TEXT, Float, DateTime, TIMESTAMP
-from os import path
-import datetime
+from flask_restful import Api
+from flask_jwt import JWT
+
+from resources.task import Task, TaskList
+# from resources.task import Task, Task
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/flask/app/web/db/mmr-api.db'
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mmr-api.db'
+app.secret_key = 'ernie'
+api = Api(app)
 
 
-class Job(db.Model):
-    id = Column(INTEGER, primary_key=True)
-    state = Column(TEXT, unique=False)
-    file_name = Column(TEXT, unique=False)
-    folder = Column(TEXT, unique=False)
-    full_path = Column(TEXT, unique=True)
-    host = Column(TEXT, unique=False)
-    time_added = Column(DateTime, unique=False)
-    time_started = Column(TIMESTAMP, unique=False)
-    time_completed = Column(TIMESTAMP, unique=False)
-    initial_file_size = Column(INTEGER, unique=False)
-    final_file_size = Column(INTEGER, unique=False)
-    progress = Column(INTEGER, unique=False)
-
-    @property
-    def path(self):
-        return path.join(self.folder, self.file_name)
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 
-def pre_job_post(data=None, **kw):
-    data['time_added'] = str(datetime.datetime.now())
-    data['state'] = 'waiting'
-
-
-api_manager = APIManager(app, flask_sqlalchemy_db=db)
-api_manager.create_api(Job,
-                       methods=['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
-                       preprocessors={
-                           'POST': [pre_job_post]
-                       })
-
-
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
-
-db.create_all()
-app.debug = True
+api.add_resource(Task, '/task/<int:id>')
+api.add_resource(TaskList, '/tasks')
 
 if __name__ == '__main__':
+    from db import db
+    db.init_app(app)
     app.run()
 
