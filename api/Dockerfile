@@ -18,8 +18,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the source code into the container
 COPY . /home/flask/app/web
-COPY ./models /home/flask/app/web/models
-COPY ./resources /home/flask/app/web/resources
 
 RUN chown -R flask:flaskgroup /home/flask
 
