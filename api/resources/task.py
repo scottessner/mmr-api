@@ -13,7 +13,7 @@ class TaskList(Resource):
         return {'tasks': [source.json() for source in TaskModel.query.all()]}
 
     def post(self):
-        data = Task.parser.parse_args()
+        data = TaskList.parser.parse_args()
         task = TaskModel(data['path'])
 
         if TaskModel.find_by_path(task.dest_path):
@@ -47,7 +47,6 @@ class Task(Resource):
         # return {'message': 'Item deleted'}
 
     def put(self, _id):
-        pass
         data = Task.parser.parse_args()
         task = TaskModel.find_by_id(_id)
 
