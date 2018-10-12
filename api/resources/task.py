@@ -10,7 +10,9 @@ class TaskList(Resource):
     parser.add_argument('path', type=str, required=True, help='This field cannot be left blank')
 
     def get(self):
-        return {'tasks': [source.json() for source in TaskModel.query.all()]}
+        tasks = TaskModel.query.all()
+        return {'count': len(tasks),
+                'tasks': [source.json() for source in tasks]}
 
     def post(self):
         data = TaskList.parser.parse_args()
