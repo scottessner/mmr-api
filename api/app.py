@@ -23,9 +23,11 @@ api.add_resource(Task, '/tasks/<int:_id>')
 api.add_resource(TaskList, '/tasks')
 api.add_resource(NextTask, '/tasks/next')
 
-print("Name is: {}".format(__name__))
+db.init_app(app)
 
-if __name__ == '__main__':
-    from db import db
-    db.init_app(app)
-    app.run()
+print("Name is: {}".format(__name__))
+#
+# if __name__ == '__main__':
+#     from db import db
+#     db.init_app(app)
+#     app.run()
