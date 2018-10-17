@@ -1,8 +1,16 @@
 from db import db
 from datetime import datetime
 import os
+from enum import Enum
 from sqlalchemy.ext.hybrid import hybrid_property, Comparator
 import json
+
+
+class TaskState(Enum):
+    open = 'open'
+    active = 'active'
+    error = 'error'
+    complete = 'complete'
 
 
 class TaskModel(db.Model):
@@ -14,6 +22,7 @@ class TaskModel(db.Model):
     time_added = db.Column(db.DateTime, unique=False)
     time_started = db.Column(db.DateTime, unique=False)
     time_completed = db.Column(db.DateTime, unique=False)
+    state = db.Column(db.Enum(TaskState))
     progress = db.Column(db.Integer)
     host = db.Column(db.String(40))
 
@@ -24,6 +33,7 @@ class TaskModel(db.Model):
         self.dest_path = os.path.splitext(path)[0] + '.mp4'
         self.time_added = time_added if time_added else datetime.now()
         self.host = host
+        self.state = TaskState.open
 
     def json(self):
         return {'id': self.id,
@@ -32,6 +42,7 @@ class TaskModel(db.Model):
                 'time_added': self.time_added.isoformat() if self.time_added else None,
                 'time_started': self.time_started.isoformat() if self.time_started else None,
                 'time_completed': self.time_completed.isoformat() if self.time_completed else None,
+                'state': self.state.name,
                 'progress': self.progress,
                 'host': self.host}
 
@@ -42,6 +53,10 @@ class TaskModel(db.Model):
     @classmethod
     def find_by_path(cls, path):
         return cls.query.filter_by(dest_path=path).first()
+
+    @classmethod
+    def find_by_state(cls, states):
+        return cls.query.filter(cls.state.in_(states)).all()
 
     @classmethod
     def next_task(cls):

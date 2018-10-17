@@ -1,16 +1,24 @@
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
-from models.task import TaskModel
+from models.task import TaskModel, TaskState
 from datetime import datetime
 import dateutil.parser
 
 
 class TaskList(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('path', type=str, required=True, help='This field cannot be left blank')
+    parser.add_argument('path', type=str, help='This field cannot be left blank')
+    parser.add_argument('filter', type=TaskState, action='append', help='Valid values are active, incomplete, active+incomplete')
 
     def get(self):
-        tasks = TaskModel.query.all()
+        data = TaskList.parser.parse_args()
+
+        filter = data.get('filter', None)
+        if filter:
+            tasks = TaskModel.find_by_state(filter)
+        else:
+            tasks = TaskModel.query.all()
+
         return {'count': len(tasks),
                 'tasks': [source.json() for source in tasks]}
 
@@ -27,11 +35,12 @@ class TaskList(Resource):
 
 class Task(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('source_path', type=str, help='The path to the source file')
-    parser.add_argument('dest_path', type=str, help='The path to the destination file')
-    parser.add_argument('time_added', type=dateutil.parser.isoparse, help='Time added in iso format')
-    parser.add_argument('time_started', type=dateutil.parser.isoparse, help='Time added in iso format')
-    parser.add_argument('time_completed', type=dateutil.parser.isoparse, help='Time added in iso format')
+    # parser.add_argument('source_path', type=str, help='The path to the source file')
+    # parser.add_argument('dest_path', type=str, help='The path to the destination file')
+    # parser.add_argument('time_added', type=dateutil.parser.isoparse, help='Time added in iso format')
+    # parser.add_argument('time_started', type=dateutil.parser.isoparse, help='Time added in iso format')
+    # parser.add_argument('time_completed', type=dateutil.parser.isoparse, help='Time added in iso format')
+    parser.add_argument('state', type=TaskState, help='State of current task')
     parser.add_argument('progress', type=int, help='Progress in percent from 0 - 100')
     parser.add_argument('host', type=str, help='Host processing the file')
 
@@ -52,11 +61,18 @@ class Task(Resource):
         data = Task.parser.parse_args()
         task = TaskModel.find_by_id(_id)
 
-        task.source_path = data['source_path']
-        task.dest_path = data['dest_path']
-        task.time_added = data['time_added']
-        task.time_started = data['time_started']
-        task.time_completed = data['time_completed']
+        # task.source_path = data['source_path']
+        # task.dest_path = data['dest_path']
+        # task.time_added = data['time_added']
+        # task.time_started = data['time_started']
+        # task.time_completed = data['time_completed']
+        if task.state != data['state']:
+            if data['state'] == TaskState.active:
+                task.time_started = datetime.now()
+            elif data['state'] == TaskState.complete:
+                task.time_completed = datetime.now()
+                task.progress = 100
+        task.state = data['state']
         task.progress = data['progress']
         task.host = data['host']
 
