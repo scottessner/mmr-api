@@ -7,7 +7,7 @@ import dateutil.parser
 
 class TaskList(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('path', type=str, help='This field cannot be left blank')
+    parser.add_argument('source_path', type=str, help='This field cannot be left blank')
     parser.add_argument('filter', type=TaskState, action='append', help='Valid values are active, incomplete, active+incomplete')
 
     def get(self):
@@ -24,7 +24,7 @@ class TaskList(Resource):
 
     def post(self):
         data = TaskList.parser.parse_args()
-        task = TaskModel(data['path'])
+        task = TaskModel(data['source_path'])
 
         if TaskModel.find_by_path(task.dest_path):
             return {'message': 'Item already exists'}, 400

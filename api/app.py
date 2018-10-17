@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mmr-api.db'
 app.secret_key = 'ernie'
-api = Api(app, prefix='/v1')
+api = Api(app, prefix='/mmr-api/v1')
 
 
 @app.before_first_request
