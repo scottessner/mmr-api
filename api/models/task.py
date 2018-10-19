@@ -60,7 +60,7 @@ class TaskModel(db.Model):
 
     @classmethod
     def next_task(cls):
-        return cls.query.filter_by(host=None).order_by(cls.time_added).first()
+        return cls.query.filter(cls.state.is_(TaskState.open)).order_by(cls.time_added).first()
 
     # @hybrid_property
     # def source_path(self):
