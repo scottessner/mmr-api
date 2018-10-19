@@ -9,7 +9,7 @@ from resources.next import NextTask
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mmr-api.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = r'sqlite:///db/mmr-api.db'
 app.secret_key = 'ernie'
 api = Api(app, prefix='/mmr-api/v1')
 
