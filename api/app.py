@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 from flask_jwt import JWT
+from flask_cors import CORS
 from db import db
 
 from resources.task import Task, TaskList
@@ -8,6 +9,7 @@ from resources.next import NextTask
 # from resources.task import Task, Task
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/mmr-api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = r'sqlite:///db/mmr-api.db'
 app.secret_key = 'ernie'
