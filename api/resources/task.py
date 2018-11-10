@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from models.task import TaskModel, TaskState
-from datetime import datetime
+from datetime import datetime, timezone
 import dateutil.parser
 
 
@@ -68,9 +68,9 @@ class Task(Resource):
         # task.time_completed = data['time_completed']
         if task.state != data['state']:
             if data['state'] == TaskState.active:
-                task.time_started = datetime.now()
+                task.time_started = datetime.now(timezone.utc)
             elif data['state'] == TaskState.complete:
-                task.time_completed = datetime.now()
+                task.time_completed = datetime.now(timezone.utc)
                 task.progress = 100
         task.state = data['state']
         task.progress = data['progress']

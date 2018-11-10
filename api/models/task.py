@@ -1,5 +1,5 @@
 from db import db
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from enum import Enum
 from sqlalchemy.ext.hybrid import hybrid_property, Comparator
@@ -31,7 +31,7 @@ class TaskModel(db.Model):
     def __init__(self, path, time_added=None, host=None, progress=None):
         self.source_path = path
         self.dest_path = os.path.splitext(path)[0] + '.mp4'
-        self.time_added = time_added if time_added else datetime.now()
+        self.time_added = time_added if time_added else datetime.now(timezone.utc)
         self.host = host
         self.state = TaskState.open
 
