@@ -39,9 +39,9 @@ class TaskModel(db.Model):
         return {'id': self.id,
                 'source_path': self.source_path,
                 'dest_path': self.dest_path,
-                'time_added': self.time_added.isoformat() if self.time_added else None,
-                'time_started': self.time_started.isoformat() if self.time_started else None,
-                'time_completed': self.time_completed.isoformat() if self.time_completed else None,
+                'time_added': "{}Z".format(self.time_added.isoformat()) if self.time_added else None,
+                'time_started': "{}Z".format(self.time_started.isoformat()) if self.time_started else None,
+                'time_completed': "{}Z".format(self.time_completed.isoformat()) if self.time_completed else None,
                 'state': self.state.name,
                 'progress': self.progress,
                 'host': self.host}
