@@ -6,7 +6,8 @@ from db import db
 
 from resources.task import Task, TaskList
 from resources.next import NextTask
-# from resources.task import Task, Task
+from resources.movie import MovieList
+from resources.title import TitleList
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/mmr-api/*": {"origins": "*"}})
@@ -21,9 +22,11 @@ def create_tables():
     db.create_all()
 
 
-api.add_resource(Task, '/tasks/<int:_id>')
 api.add_resource(TaskList, '/tasks')
+api.add_resource(Task, '/tasks/<int:_id>')
 api.add_resource(NextTask, '/tasks/next')
+api.add_resource(TitleList, '/titles')
+api.add_resource(MovieList, '/movies')
 
 db.init_app(app)
 
