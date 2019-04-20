@@ -1,8 +1,6 @@
 from db import db
-from ma import ma
-from marshmallow import fields
-from marshmallow_enum import EnumField
 from enum import Enum
+from datetime import datetime, timezone
 
 
 class TitleType(Enum):
@@ -15,22 +13,46 @@ class TitleType(Enum):
     shorts = 'Shorts'
     trailers = 'Trailers'
     episode = 'Episode'
+    unkonwn = 'Unknown'
 
 
-class Title(db.Model):
+class TitleModel(db.Model):
     __tablename__ = 'titles'
 
     id = db.Column(db.Integer, primary_key=True)
-    path = db.Column(db.String)
-    title_type = db.Column(db.Enum(TitleType))
+    name = db.Column(db.String)
+    path = db.Column(db.String, unique=True)
+    title_type = db.Column(db.Enum(TitleType), default=TitleType.unkonwn)
+    file_size = db.Column(db.Integer)
+    duration = db.Column(db.Integer)
+    video_codec = db.Column(db.String)
+    video_encoding_settings = db.Column(db.String)
+    height = db.Column(db.Integer)
+    width = db.Column(db.Integer)
+    writing_application = db.Column(db.String)
+    time_added = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    time_modified = db.Column(db.DateTime)
+    time_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'), nullable=True)
-    time_added = db.Column(db.DateTime, unique=False)
-    time_updated = db.Column(db.DateTime, unique=False)
+    movie = db.relationship('MovieModel', backref='titles')
+    disc_id = db.Column(db.Integer, db.ForeignKey('discs.id', ondelete='CASCADE'), nullable=True)
+    disc = db.relationship('DiscModel', backref='titles')
 
+    @classmethod
+    def find_by_id(cls, _id):
+        return cls.query.filter_by(id=_id).first()
 
-class TitleSchema(ma.Schema):
-    id = fields.Integer(dump_only=True)
-    path = fields.String()
-    title_type = EnumField(TitleType, required=True)
-    time_added = fields.DateTime()
-    time_updated = fields.DateTime()
+    @classmethod
+    def find_by_path(cls, path):
+        return cls.query.filter_by(path=path).first()
+
+    @classmethod
+    def search(cls, params):
+        q = db.session.query(cls)
+        for key, value in params.items():
+            q = q.filter(getattr(cls, key).like("%%{}%%".format(value)))
+        return q.all()
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()

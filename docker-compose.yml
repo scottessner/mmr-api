@@ -1,9 +1,7 @@
 version: '3'
 
 services:
-  api:
-    container_name: mmr-api-flask
-    hostname: mmr-api-flask
+  flask:
     restart: unless-stopped
     build: ./api
     expose:
@@ -12,20 +10,16 @@ services:
       - /usr/src/app/web/project/static
       - ./db:/home/flask/app/web/db
     command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
+    networks:
+      - default
+      - website
 
-  nginx:
-    container_name: mmr-api-nginx
-    hostname: mmr-api-nginx
-    restart: unless-stopped
-    build: ./nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /www/static
-#    volumes_from:
-#      - api
-#    depends_on:
-#      - api
-#
-#volumes:
+#  db:
+#    image: postgres
+#    networks:
+#      - default
+
+networks:
+  website:
+    external:
+      name: ssessner_com_proxy_website

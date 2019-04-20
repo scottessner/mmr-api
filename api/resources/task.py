@@ -1,80 +1,75 @@
-from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
-from models.task import TaskModel, TaskState
-from datetime import datetime, timezone
-import dateutil.parser
+from db import db
+from flask_restful import Resource, request
+from models.task import TaskModel, TaskType
+from models.title import TitleModel
+from schemas.task import TaskSchema
+
+
+task_list_schema = TaskSchema(many=True, session=db.session)
+task_schema = TaskSchema(session=db.session)
 
 
 class TaskList(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('source_path', type=str, help='This field cannot be left blank')
-    parser.add_argument('filter', type=TaskState, action='append', help='Valid values are active, incomplete, active+incomplete')
 
     def get(self):
-        data = TaskList.parser.parse_args()
-
-        filter = data.get('filter', None)
-        if filter:
-            tasks = TaskModel.find_by_state(filter)
-        else:
-            tasks = TaskModel.query.all()
-
-        return {'count': len(tasks),
-                'tasks': [source.json() for source in tasks]}
+        tasks = TaskModel.query.all()
+        tasks_json = task_list_schema.dump(tasks).data
+        return tasks_json
 
     def post(self):
-        data = TaskList.parser.parse_args()
-        task = TaskModel(data['source_path'])
+        req_data = request.get_json()
+        try:
+            task = task_schema.load(req_data).data
 
-        if TaskModel.find_by_path(task.dest_path):
-            return {'message': 'Item already exists'}, 400
+            task.save_to_db()
+            return task_schema.dump(task).data, 201
 
-        task.save_to_db()
-        return task.json(), 201
+        except AssertionError as e:
+            return {'message': str(e)}, 400
 
 
 class Task(Resource):
-    parser = reqparse.RequestParser()
-    # parser.add_argument('source_path', type=str, help='The path to the source file')
-    # parser.add_argument('dest_path', type=str, help='The path to the destination file')
-    # parser.add_argument('time_added', type=dateutil.parser.isoparse, help='Time added in iso format')
-    # parser.add_argument('time_started', type=dateutil.parser.isoparse, help='Time added in iso format')
-    # parser.add_argument('time_completed', type=dateutil.parser.isoparse, help='Time added in iso format')
-    parser.add_argument('state', type=TaskState, help='State of current task')
-    parser.add_argument('progress', type=int, help='Progress in percent from 0 - 100')
-    parser.add_argument('host', type=str, help='Host processing the file')
 
     def get(self, _id):
         task = TaskModel.find_by_id(_id)
 
         if task:
-            return task.json()
-        return {'message': 'Source not found'}, 404
-
-    def delete(self, name):
-        pass
-        # global items
-        # items = list(filter(lambda x: x['name'] != name, items))
-        # return {'message': 'Item deleted'}
+            return task_schema.dump(task).data
 
     def put(self, _id):
-        data = Task.parser.parse_args()
-        task = TaskModel.find_by_id(_id)
-
-        # task.source_path = data['source_path']
-        # task.dest_path = data['dest_path']
-        # task.time_added = data['time_added']
-        # task.time_started = data['time_started']
-        # task.time_completed = data['time_completed']
-        if task.state != data['state']:
-            if data['state'] == TaskState.active:
-                task.time_started = datetime.now(timezone.utc)
-            elif data['state'] == TaskState.complete:
-                task.time_completed = datetime.now(timezone.utc)
-                task.progress = 100
-        task.state = data['state']
-        task.progress = data['progress']
-        task.host = data['host']
-
+        req_data = request.get_json()
+        task = task_schema.load(req_data, instance=TaskModel.find_by_id(_id)).data
         task.save_to_db()
-        return task.json()
+        return task_schema.dump(task).data, 201
+
+
+class NextTask(Resource):
+
+    def post(self):
+        req_data = request.get_json()
+        task = TaskModel.next_task(req_data['host'])
+
+        if not task:
+            return {'message': 'No tasks ready for processing.'}, 204
+
+        return task.json(), 201
+
+
+class TasksByTitle(Resource):
+
+    def post(self, title_id):
+        title = TitleModel.find_by_id(title_id)
+        req_data = request.get_json()
+        try:
+            task = task_schema.load(req_data).data
+            task.title = title
+
+            task.save_to_db()
+            return task_schema.dump(task).data, 201
+
+        except AssertionError as e:
+            return {'message': str(e)}, 400
+
+    def get(self, title_id):
+        title = TitleModel.find_by_id(title_id)
+        return task_list_schema.dump(title.tasks).data
