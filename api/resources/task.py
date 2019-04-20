@@ -52,7 +52,7 @@ class NextTask(Resource):
         if not task:
             return {'message': 'No tasks ready for processing.'}, 204
 
-        return task.schema.dump(task).data, 201
+        return task_schema.dump(task).data, 201
 
 
 class TasksByTitle(Resource):
