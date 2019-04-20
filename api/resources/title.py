@@ -18,8 +18,8 @@ class TitleList(Resource):
         req_data = request.get_json()
         try:
             title = title_schema.load(req_data).data
-            # if TitleModel.find_by_path(req_data['path']):
-            #     return {'message': 'Item already exists'}, 400
+            if TitleModel.find_by_path(req_data['path']):
+                return {'message': 'Item already exists'}, 400
 
             title.save_to_db()
             return title_schema.dump(title).data, 201
