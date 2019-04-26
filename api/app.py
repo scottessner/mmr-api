@@ -11,6 +11,7 @@ from resources.movie import Movie, MovieList
 from resources.disc import Disc, DiscList, DiscScan
 from resources.title import Title, TitleList, TitleQuery
 from resources.task import Task, TaskList, NextTask, TasksByTitle
+from resources.status import TaskStatus
 
 app = Flask(__name__)
 migrate = Migrate(app, db)
@@ -38,6 +39,7 @@ api.add_resource(TitleList, '/titles')
 api.add_resource(Title, '/titles/<int:_id>')
 api.add_resource(TitleQuery, '/titles/search')
 api.add_resource(TasksByTitle, '/titles/<int:title_id>/tasks')
+api.add_resource(TaskStatus, '/status/tasks')
 
 db.init_app(app)
 

@@ -1,16 +1,17 @@
 from db import db
 from datetime import datetime, timezone
 from enum import Enum
+from sqlalchemy import func
 
 
-class TaskState(Enum):
+class TaskState(str, Enum):
     open = 'open'
     active = 'active'
     error = 'error'
     complete = 'complete'
 
 
-class TaskType(Enum):
+class TaskType(str, Enum):
     preview = 'preview'
     compress = 'compress'
     rename = 'rename'
@@ -43,6 +44,16 @@ class TaskModel(db.Model):
     @classmethod
     def find_by_state(cls, states):
         return cls.query.filter(cls.state.in_(states)).all()
+
+    @classmethod
+    def count_by_state(cls):
+        count_dict = dict()
+        for state in TaskState:
+            count_dict[state.value] = 0
+        counts = cls.query.with_entities(cls.state, func.count(cls.state)).group_by(cls.state).all()
+        for count in counts:
+            count_dict[count[0]] = count[1]
+        return count_dict
 
     @classmethod
     def next_task(cls, host):
