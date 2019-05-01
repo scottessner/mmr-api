@@ -2,9 +2,13 @@ from db import db
 from flask_restful import Resource, request
 from models.title import TitleModel
 from schemas.title import TitleSchema
+from models.task import TaskModel, TaskType
+from schemas.task import TaskSchema
+
 
 title_list_schema = TitleSchema(many=True, session=db.session)
 title_schema = TitleSchema(session=db.session)
+task_schema = TaskSchema(session=db.session)
 
 
 class TitleList(Resource):
@@ -22,6 +26,9 @@ class TitleList(Resource):
                 return {'message': 'Item already exists'}, 400
 
             title.save_to_db()
+            task = task_schema.load({'type': TaskType.title_info}).data
+            task.title = title
+            task.save_to_db()
             return title_schema.dump(title).data, 201
 
         except AssertionError as e:
@@ -38,9 +45,15 @@ class Title(Resource):
 
     def put(self, _id):
         req_data = request.get_json()
-        task = title_schema.load(req_data, instance=TitleModel.find_by_id(_id)).data
-        task.save_to_db()
-        return title_schema.dump(task).data, 201
+        title = title_schema.load(req_data, instance=TitleModel.find_by_id(_id)).data
+        title.save_to_db()
+
+        if 'path' in req_data.keys():
+            task = task_schema.load({'type': TaskType.title_info}).data
+            task.title = title
+            task.save_to_db()
+
+        return title_schema.dump(title).data, 201
 
 
 class TitleQuery(Resource):

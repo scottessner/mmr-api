@@ -44,8 +44,8 @@ api.add_resource(TaskStatus, '/status/tasks')
 db.init_app(app)
 
 print("Name is: {}".format(__name__))
-#
-# if __name__ == '__main__':
-#     from db import db
-#     db.init_app(app)
-#     app.run()
+
+if __name__ == '__main__':
+    from db import db
+    db.init_app(app)
+    app.run(host='192.168.20.168')

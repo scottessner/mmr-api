@@ -16,6 +16,7 @@ class TaskType(str, Enum):
     compress = 'compress'
     rename = 'rename'
     remux = 'remux'
+    title_info = 'title_info'
 
 
 class TaskModel(db.Model):
