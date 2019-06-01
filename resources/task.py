@@ -1,6 +1,6 @@
 from db import db
 from flask_restful import Resource, request
-from models.task import TaskModel
+from models.task import TaskModel, TaskState
 from models.title import TitleModel
 from schemas.task import TaskSchema
 
@@ -40,6 +40,9 @@ class Task(Resource):
         req_data = request.get_json()
         task = task_schema.load(req_data, instance=TaskModel.find_by_id(_id)).data
         task.save_to_db()
+
+        if task.state == TaskState.complete:
+            TaskModel.
         return task_schema.dump(task).data, 201
 
 
