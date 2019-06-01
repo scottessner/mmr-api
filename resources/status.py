@@ -1,7 +1,5 @@
-from db import db
-from flask_restful import Resource, request
+from flask_restful import Resource
 from models.task import TaskModel
-import json
 
 
 class TaskStatus(Resource):

@@ -17,6 +17,7 @@ class TaskType(str, Enum):
     rename = 'rename'
     remux = 'remux'
     title_info = 'title_info'
+    scan = 'scan'
 
 
 class TaskModel(db.Model):
@@ -31,7 +32,7 @@ class TaskModel(db.Model):
     type = db.Column(db.Enum(TaskType), nullable=False)
     progress = db.Column(db.Integer)
     host = db.Column(db.String(40))
-    title_id = db.Column(db.Integer, db.ForeignKey('titles.id', ondelete='CASCADE'), nullable=False)
+    title_id = db.Column(db.Integer, db.ForeignKey('titles.id', ondelete='CASCADE'), nullable=True)
     title = db.relationship('TitleModel', backref='tasks')
 
     @classmethod
@@ -58,7 +59,7 @@ class TaskModel(db.Model):
 
     @classmethod
     def next_task(cls, host):
-        next_task = cls.query.filter(cls.state.is_(TaskState.open)).order_by(cls.time_added).first()
+        next_task = cls.query.filter(cls.state == TaskState.open).order_by(cls.time_added).first()
         if next_task:
             next_task.host = host
             next_task.state = TaskState.active

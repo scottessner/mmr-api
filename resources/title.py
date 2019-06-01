@@ -2,7 +2,7 @@ from db import db
 from flask_restful import Resource, request
 from models.title import TitleModel
 from schemas.title import TitleSchema
-from models.task import TaskModel, TaskType
+from models.task import TaskType
 from schemas.task import TaskSchema
 
 
@@ -49,6 +49,7 @@ class Title(Resource):
         title.save_to_db()
 
         if 'path' in req_data.keys():
+            # If the path of the title has changed, scan the new file for media info
             task = task_schema.load({'type': TaskType.title_info}).data
             task.title = title
             task.save_to_db()

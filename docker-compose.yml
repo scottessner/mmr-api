@@ -3,21 +3,28 @@ version: '3'
 services:
   flask:
     restart: unless-stopped
-    build: ./api
+    build: .
     expose:
-      - "8000"
-    volumes:
-      - /usr/src/app/web/project/static
-      - ./db:/home/flask/app/web/db
+      - 8000
+    environment:
+      DATABASE_URL: postgres://mmr-api:example@db:5432/mmr-api
     command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
     networks:
       - default
       - website
+    depends_on:
+      - db
 
-#  db:
-#    image: postgres
-#    networks:
-#      - default
+  db:
+    image: postgres
+    restart: always
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: mmr-api
+      POSTGRES_PASSWORD: example
+    networks:
+      - default
 
 networks:
   website:

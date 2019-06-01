@@ -1,6 +1,6 @@
 from db import db
 from flask_restful import Resource, request
-from models.task import TaskModel, TaskType
+from models.task import TaskModel
 from models.title import TitleModel
 from schemas.task import TaskSchema
 
