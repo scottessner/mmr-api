@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from resources.movie import Movie, MovieList
 from resources.disc import DiscScan, DiscList, DiscScan
 from resources.title import Title, TitleList, TitleQuery
-from resources.task import Task, TaskList, NextTask, TasksByTitle
+from resources.task import Task, TaskList, NextTask, TasksByTitle, TaskQuery
 from resources.status import TaskStatus
 
 app = Flask(__name__)
@@ -32,6 +32,7 @@ api.add_resource(DiscScan, '/discs/<int:_id>')
 # api.add_resource(DiscScan, '/discs/scan')
 api.add_resource(TaskList, '/tasks')
 api.add_resource(Task, '/tasks/<int:_id>')
+api.add_resource(TaskQuery, '/tasks/search')
 api.add_resource(NextTask, '/tasks/next')
 api.add_resource(TitleList, '/titles')
 api.add_resource(Title, '/titles/<int:_id>')
@@ -46,4 +47,4 @@ print("Name is: {}".format(__name__))
 if __name__ == '__main__':
     from db import db
     db.init_app(app)
-    app.run(host='192.168.20.168')
+    app.run(host='0.0.0.0', port=8000)
