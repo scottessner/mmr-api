@@ -26,6 +26,7 @@ class TitleList(Resource):
                 return {'message': 'Item already exists'}, 400
 
             title.save_to_db()
+            # If the title is new, create a task to scan for media info
             task = task_schema.load({'type': TaskType.title_info}).data
             task.title = title
             task.save_to_db()
@@ -48,6 +49,7 @@ class Title(Resource):
         title = title_schema.load(req_data, instance=TitleModel.find_by_id(_id)).data
         title.save_to_db()
 
+        # Hooks for starting other tasks based on updated information
         if 'path' in req_data.keys():
             # If the path of the title has changed, scan the new file for media info
             task = task_schema.load({'type': TaskType.title_info}).data

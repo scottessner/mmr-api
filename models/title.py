@@ -50,7 +50,13 @@ class TitleModel(db.Model):
     def search(cls, params):
         q = db.session.query(cls)
         for key, value in params.items():
-            q = q.filter(getattr(cls, key).like("%%{}%%".format(value)))
+            # Perform an exact match for columns that require it
+            if key == 'id' or key == 'title_type':
+                q = q.filter(getattr(cls, key) == value)
+
+            # Perform a like query for everything else
+            else:
+                q = q.filter(getattr(cls, key).like("%%{}%%".format(value)))
         return q.all()
 
     def save_to_db(self):

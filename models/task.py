@@ -20,6 +20,14 @@ class TaskType(str, Enum):
     scan = 'scan'
 
 
+def end_time(context):
+    parameters = context.current_parameters
+    value = None
+    if parameters.get('state') == TaskState.complete:
+        value = datetime.now(timezone.utc)
+    return value
+
+
 class TaskModel(db.Model):
     __tablename__ = 'tasks'
 
@@ -27,7 +35,7 @@ class TaskModel(db.Model):
     time_added = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     time_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     time_started = db.Column(db.DateTime, unique=False)
-    time_completed = db.Column(db.DateTime, unique=False)
+    time_completed = db.Column(db.DateTime, unique=False, onupdate=end_time)
     state = db.Column(db.Enum(TaskState), default=TaskState.open)
     type = db.Column(db.Enum(TaskType), nullable=False)
     progress = db.Column(db.Integer)
@@ -48,6 +56,19 @@ class TaskModel(db.Model):
         return cls.query.filter(cls.state.in_(states)).all()
 
     @classmethod
+    def search(cls, params):
+        q = db.session.query(cls)
+        for key, value in params.items():
+            # Perform an exact match query on fields that require it
+            if key == 'state' or key == 'id':
+                q = q.filter(getattr(cls, key) == value)
+
+            # Perform a like query on everything else
+            else:
+                q = q.filter(getattr(cls, key).like("%%{}%%".format(value)))
+        return q.all()
+
+    @classmethod
     def count_by_state(cls):
         count_dict = dict()
         for state in TaskState:
@@ -63,6 +84,7 @@ class TaskModel(db.Model):
         if next_task:
             next_task.host = host
             next_task.state = TaskState.active
+            next_task.time_started = datetime.now(timezone.utc)
             next_task.save_to_db()
         return next_task
 
