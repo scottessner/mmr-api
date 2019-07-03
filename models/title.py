@@ -23,7 +23,7 @@ class TitleModel(db.Model):
     name = db.Column(db.String)
     path = db.Column(db.String, unique=True)
     title_type = db.Column(db.Enum(TitleType), default=TitleType.unkonwn)
-    file_size = db.Column(db.Integer)
+    file_size = db.Column(db.BigIntegerInteger)
     duration = db.Column(db.Integer)
     video_codec = db.Column(db.String)
     video_encoding_settings = db.Column(db.String)

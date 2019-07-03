@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_restful import Api
 import os
 from db import db
@@ -13,7 +14,7 @@ from resources.status import TaskStatus
 
 app = Flask(__name__)
 migrate = Migrate(app, db)
-# cors = CORS(app, resources={r"/mmr-api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.secret_key = 'ernie'
