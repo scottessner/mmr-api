@@ -1,7 +1,7 @@
 from db import db
 from datetime import datetime, timezone
 from enum import Enum
-from sqlalchemy import func
+from sqlalchemy import func, and_
 
 
 class TaskState(str, Enum):
@@ -33,7 +33,7 @@ class TaskModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     time_added = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    time_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    time_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     time_started = db.Column(db.DateTime, unique=False)
     time_completed = db.Column(db.DateTime, unique=False, onupdate=end_time)
     state = db.Column(db.Enum(TaskState), default=TaskState.open)
@@ -71,16 +71,31 @@ class TaskModel(db.Model):
     @classmethod
     def count_by_state(cls):
         count_dict = dict()
-        for state in TaskState:
-            count_dict[state.value] = 0
-        counts = cls.query.with_entities(cls.state, func.count(cls.state)).group_by(cls.state).all()
+        for type in TaskType:
+            count_dict[type.value] = dict()
+            for state in TaskState:
+                count_dict[type.value][state.value] = 0
+        counts = cls.query.with_entities(cls.state, cls.type, func.count(cls.state).label('count')).group_by(cls.state, cls.type).all()
         for count in counts:
-            count_dict[count[0]] = count[1]
+            count_dict[count.type][count.state] = count.count
         return count_dict
 
     @classmethod
     def next_task(cls, host):
-        next_task = cls.query.filter(cls.state == TaskState.open).order_by(cls.time_added).first()
+
+        # Sequence of tasks with higher priority.  Any types not listed are prioritized by earliest added
+        task_priority = (TaskType.scan,
+                         TaskType.title_info,
+                         TaskType.preview)
+
+        for task_type in task_priority:
+            next_task = cls.query.filter(and_(cls.state == TaskState.open, cls.type == task_type)).first()
+            if next_task is not None:
+                break
+
+        if next_task is None:
+            next_task = cls.query.filter(cls.state == TaskState.open).order_by(cls.time_added).first()
+
         if next_task:
             next_task.host = host
             next_task.state = TaskState.active
@@ -89,6 +104,7 @@ class TaskModel(db.Model):
         return next_task
 
     def save_to_db(self):
+        self.time_updated = datetime.now(timezone.utc)
         db.session.add(self)
         db.session.commit()
 
