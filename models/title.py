@@ -16,6 +16,10 @@ class TitleType(Enum):
     unkonwn = 'Unknown'
 
 
+def current_time(context):
+    return datetime.now(timezone.utc)
+
+
 class TitleModel(db.Model):
     __tablename__ = 'titles'
 
@@ -30,9 +34,9 @@ class TitleModel(db.Model):
     height = db.Column(db.Integer)
     width = db.Column(db.Integer)
     writing_application = db.Column(db.String)
-    time_added = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    time_added = db.Column(db.DateTime, default=current_time)
     time_modified = db.Column(db.DateTime)
-    time_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    time_updated = db.Column(db.DateTime, default=current_time, onupdate=current_time)
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id', ondelete='CASCADE'), nullable=True)
     movie = db.relationship('MovieModel', backref='titles')
     disc_id = db.Column(db.Integer, db.ForeignKey('discs.id', ondelete='CASCADE'), nullable=True)
