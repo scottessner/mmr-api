@@ -28,12 +28,16 @@ def end_time(context):
     return value
 
 
+def current_time(context):
+    return datetime.now(timezone.utc)
+
+
 class TaskModel(db.Model):
     __tablename__ = 'tasks'
 
     id = db.Column(db.Integer, primary_key=True)
-    time_added = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    time_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    time_added = db.Column(db.DateTime, default=current_time)
+    time_updated = db.Column(db.DateTime, default=current_time, onupdate=current_time)
     time_started = db.Column(db.DateTime, unique=False)
     time_completed = db.Column(db.DateTime, unique=False, onupdate=end_time)
     state = db.Column(db.Enum(TaskState), default=TaskState.open)
@@ -60,7 +64,7 @@ class TaskModel(db.Model):
         q = db.session.query(cls)
         for key, value in params.items():
             # Perform an exact match query on fields that require it
-            if key == 'state' or key == 'id':
+            if key == 'state' or key == 'id' or key == 'type':
                 q = q.filter(getattr(cls, key) == value)
 
             # Perform a like query on everything else
@@ -104,7 +108,7 @@ class TaskModel(db.Model):
         return next_task
 
     def save_to_db(self):
-        self.time_updated = datetime.now(timezone.utc)
+        # self.time_updated = datetime.now(timezone.utc)
         db.session.add(self)
         db.session.commit()
 
